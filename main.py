@@ -25,7 +25,14 @@ class Main(Star):
             Current native search tools indexed by their registered names.
         """
         manager = self.context.get_llm_tool_manager()
+        profiles = [
+            profile
+            for profile in self.context.astrbot_config_mgr.confs.values()
+            if profile["agent_runner"]["runner_type"] == "local"
+            and profile["provider_settings"]["web_search"]
+        ]
         tools = {}
+        provided = set()
         for tool_class in iter_builtin_tool_classes():
             name = get_builtin_tool_name(tool_class)
             rule = get_builtin_tool_config_rule(name)
@@ -35,11 +42,46 @@ class Main(Star):
             ):
                 continue
             tools[name] = manager.get_builtin_tool(tool_class)
+            if profiles and all(
+                all(condition["matched"] for condition in rule.evaluate(profile))
+                for profile in profiles
+            ):
+                provided.add(name)
 
+        # The plugin selection is global; only lock tools provided everywhere.
         names = sorted(tools)
         field = self.config.schema["tools"]
-        field["options"] = names
-        field["subtitles"] = [tools[name].description for name in names]
+        field["options"] = [
+            {
+                "title": name,
+                "value": name,
+                "props": {
+                    "disabled": name in provided,
+                    "subtitle": (
+                        "框架已挂载 · " + tools[name].description
+                        if name in provided
+                        else tools[name].description
+                    ),
+                },
+            }
+            for name in names
+        ]
+
+        previous = self.config.get("_framework_tools", [])
+        selected = self.config.get("tools", [])
+        manual = list(
+            dict.fromkeys(
+                name
+                for name in selected
+                if name not in previous and name not in provided
+            )
+        )
+        combined = manual + sorted(provided)
+        locked = sorted(provided)
+        if combined != selected or locked != previous:
+            self.config["tools"] = combined
+            self.config["_framework_tools"] = locked
+            self.config.save_config()
         return tools
 
     @filter.on_llm_request()
@@ -53,7 +95,11 @@ class Main(Star):
             req: Request whose existing tool pool receives the selected tools.
         """
         tools = self._refresh_tool_options()
-        selected = self.config.get("tools", [])
+        selected = [
+            name
+            for name in self.config.get("tools", [])
+            if name not in self.config.get("_framework_tools", [])
+        ]
         if not selected:
             return
 
