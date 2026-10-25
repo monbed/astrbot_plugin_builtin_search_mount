@@ -1,0 +1,9 @@
+name: astrbot_plugin_builtin_search_mount
+display_name: 内置搜索多工具挂载
+desc: 动态读取框架注册的内置搜索工具，手动多选并同时挂载，直接复用框架工具实例和当前会话配置。
+short_desc: 手动多选并同时挂载多个框架内置搜索工具。
+version: "1.0.0"
+author: monbed
+repo: https://github.com/monbed/astrbot_plugin_builtin_search_mount
+astrbot_version: ">=4.28.0"
+support_platforms: []
