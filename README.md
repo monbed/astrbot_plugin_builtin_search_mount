@@ -100,6 +100,25 @@ astrbot_plugin_builtin_search_mount/
 - [AstrBot 网页搜索文档](https://docs.astrbot.app/use/websearch.html)
 - [AstrBot 4.28.0 发布说明](https://github.com/AstrBotDevs/AstrBot/blob/v4.28.0/changelogs/v4.28.0.md)
 
+## 更新日志
+
+### v1.0.2 (2026-11-03)
+
+- 优化：插件配置的下拉选项改用官方文档规定的 `options` + `subtitles` 写法；框架已挂载的工具改为在说明中标注“框架已挂载”，手动取消后会自动恢复勾选。
+- 优化：`FunctionTool`、`ToolSet` 改为从公开接口 `astrbot.api` 导入。
+- 修复：框架配置缺少字段时不再报错，读取工具、保存配置、读取会话配置失败时只记录日志，不影响插件加载和 LLM 请求。
+- 文档：README 按 AstrBot 插件常见格式重写，新增 AGPL-3.0 许可证。
+
+### v1.0.1 (2026-10-25)
+
+- 新增：框架已默认挂载的搜索和正文提取工具自动勾选并锁定，避免重复补挂载。
+- 新增：存在多份框架配置时，只锁定所有启用搜索的配置都已挂载的工具，各会话执行时分别去重。
+- 新增：插件 Logo。
+
+### v1.0.0 (2026-10-25)
+
+- 首次发布：动态读取框架内置搜索工具，可多选并在 LLM 请求中同时挂载。
+
 ## 许可证
 
 本项目基于 [GNU Affero General Public License v3.0](LICENSE) 开源。
